@@ -27,6 +27,7 @@ class Player(tk.Tk):
 # For Music Playing Logic
         self.path_songs = []
         self.is_playing = False
+        self.is_paused = False
 
 
 
@@ -67,14 +68,14 @@ class Player(tk.Tk):
     def create_pause_button(self):
         '''Making pause button'''
         pause_button = PhotoImage(file='Images/pause.png')
-        tk.Button(self.window, image=pause_button, bg='#0f1a2b', bd=0).place(x=200, y=500)
+        tk.Button(self.window, image=pause_button, bg='#0f1a2b', bd=0, command=self.pause_song).place(x=200, y=500)
         return pause_button
 
 
     def create_resume_button(self):
         '''Making the unpause button'''
         resume_button = PhotoImage(file='Images/resume.png')
-        tk.Button(self.window, image=resume_button,bg='#0f1a2b', bd=0,command=mixer.music.unpause).place(x=115, y=500)
+        tk.Button(self.window, image=resume_button,bg='#0f1a2b', bd=0,command=self.resume_song).place(x=115, y=500)
         return resume_button
 
 
@@ -110,7 +111,7 @@ class Player(tk.Tk):
         playlist = tk.Listbox(self.menu_frame, width=100, font=('Arial', 10), bg='#333333', fg='green', selectbackground='lightblue', cursor='hand2', bd=0, yscrollcommand=scroll.set)
         playlist.bind('<Return>', self.play_song_event)
         playlist.bind('<Double-Button-1>', self.play_song_event)
-        # playlist.bind('<space>', stop_song)
+        playlist.bind('<space>', self.resume_or_pause_song_event)
         scroll.config(command=playlist.yview)
         scroll.pack(side=tk.RIGHT, fill=tk.Y)
         playlist.pack(side=tk.LEFT, fill=tk.BOTH)
@@ -191,6 +192,29 @@ class Player(tk.Tk):
         self.is_playing = False
         pygame.mixer.music.stop()
 
+
+    def resume_song(self):
+        if(self.is_paused):
+            pygame.mixer.music.unpause()
+            self.is_paused = False;
+        if(self.is_playing == False):
+            self.is_playing = True
+            self.play_song()
+    def pause_song(self):
+        if(self.is_paused == False):
+            pygame.mixer.music.pause()
+            self.is_paused = True;
+
+    def resume_or_pause_song_event(self, event):
+        if(self.is_playing == False):
+            self.is_playing = True
+            self.play_song()
+        elif(self.is_paused):
+            pygame.mixer.music.unpause()
+            self.is_paused = False;
+        elif(self.is_paused == False):
+            pygame.mixer.music.pause()
+            self.is_paused = True;
 
     def run(self):
         self.window.mainloop()
