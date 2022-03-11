@@ -6,6 +6,7 @@ import pygame
 from tkinter import PhotoImage
 from tkinter import filedialog
 from pygame import mixer
+from PIL import Image, ImageTk
 
 # Constant Colors
 
@@ -22,7 +23,7 @@ class Player(tk.Tk):
         self.window.geometry("1000x600")
         self.window.title("Music Player")
         self.window.configure(bg='#0f1a2b')
-        self.window.resizable(0,0)
+        # self.window.resizable(0,0)
 
 # For Music Playing Logic
         self.path_songs = []
@@ -40,6 +41,7 @@ class Player(tk.Tk):
         self.pause_button = self.create_pause_button()
         self.resume_button = self.create_resume_button()
         self.stop_button = self.create_stop_button()
+        # self.forward_button_ = self.create_forward_button()
 
 
 
@@ -63,6 +65,22 @@ class Player(tk.Tk):
         play_button = PhotoImage(file='Images/play.png')
         Ply = tk.Button(self.window, image=play_button, bg='#0f1a2b', bd=0, command=self.play_song).place(x=100, y=400)
         return play_button
+
+
+    # def create_forward_button(self):
+    #     '''Creating the forward button'''
+    #     forward_button_resize = Image.open('Images/Next.png')
+    #     forward_button_resize.resize(20,30)
+    #     forward_button = PhotoImage(forward_button_resize)
+    #     Ply = tk.Button(self.window, image=forward_button, bg='#0f1a2b', bd=0, command=self.play_song).place(x=400, y=490)
+    #     return forward_button
+
+
+    # def create_backword_button(self):
+    #     '''Creating the back button'''
+    #     back_button = PhotoImage(file='Images/back.png')
+    #     Ply = tk.Button(self.window, image=back_button, bg='#0f1a2b', bd=0, command=self.play_song).place(x=400, y=700)
+    #     return back_button
 
 
     def create_pause_button(self):
@@ -112,12 +130,39 @@ class Player(tk.Tk):
         playlist.bind('<Return>', self.play_song_event)
         playlist.bind('<Double-Button-1>', self.play_song_event)
         playlist.bind('<space>', self.resume_or_pause_song_event)
+        playlist.bind('<f>', self.forward_song)
+        playlist.bind('<b>', self.back_song)
         scroll.config(command=playlist.yview)
         scroll.pack(side=tk.RIGHT, fill=tk.Y)
         playlist.pack(side=tk.LEFT, fill=tk.BOTH)
         return playlist
 
+    def forward_song(self, event):
+        next_one = self.playlist.curselection()
+        next_one = next_one[0]+1
+        song = self.playlist.get(next_one)
 
+
+        self.playlist.selection_clear(0, tk.END)
+        self.playlist.activate(next_one)
+        self.playlist.selection_set(next_one, last=None)
+        self.play_song()
+
+
+
+    def back_song(self, event):
+        next_one = self.playlist.curselection()
+        try:
+            next_one = next_one[0]-1
+            song = self.playlist.get(next_one)
+        except Exception as e:
+            song = next_one
+
+        finally:
+            self.playlist.selection_clear(0, tk.END)
+            self.playlist.activate(next_one)
+            self.playlist.selection_set(next_one, last=None)
+            self.play_song()
 
 
     def add_song_folder_command(self):
