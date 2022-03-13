@@ -41,7 +41,7 @@ class Player(tk.Tk):
         self.pause_button = self.create_pause_button()
         self.resume_button = self.create_resume_button()
         self.stop_button = self.create_stop_button()
-        # self.forward_button_ = self.create_forward_button()
+        self.forward_button_ = self.create_forward_button()
 
 
 
@@ -51,6 +51,10 @@ class Player(tk.Tk):
         self.folder_song_Add = self.create_add_button()
 
         self.playlist = self.play_list()
+
+        self.created_menu = self.create_menu_dropdown()
+        self.add_song_menu = self.menu_dropdown_one()
+        self.one_menu = self.menu_dropdown_one_o()
 
     def create_top_frame(self):
         '''Creating the top frame'''
@@ -67,20 +71,6 @@ class Player(tk.Tk):
         return play_button
 
 
-    # def create_forward_button(self):
-    #     '''Creating the forward button'''
-    #     forward_button_resize = Image.open('Images/Next.png')
-    #     forward_button_resize.resize(20,30)
-    #     forward_button = PhotoImage(forward_button_resize)
-    #     Ply = tk.Button(self.window, image=forward_button, bg='#0f1a2b', bd=0, command=self.play_song).place(x=400, y=490)
-    #     return forward_button
-
-
-    # def create_backword_button(self):
-    #     '''Creating the back button'''
-    #     back_button = PhotoImage(file='Images/back.png')
-    #     Ply = tk.Button(self.window, image=back_button, bg='#0f1a2b', bd=0, command=self.play_song).place(x=400, y=700)
-    #     return back_button
 
 
     def create_pause_button(self):
@@ -104,11 +94,62 @@ class Player(tk.Tk):
         return stop_button
 
 
+
+    def create_forward_button(self):
+        forward_button_ = Image.open('Images/Next.png')
+        forward_button_ = forward_button_.resize((40, 50), Image.ANTIALIAS)
+
+        forward_button = ImageTk.PhotoImage(forward_button_)
+        tk.Button(self.window, image=forward_button,bg='#0f1a2b', bd=0, command=self.forward_song).place(x=390, y=550)
+        return forward_button
+    
+
+
     def create_menu(self):
         '''Creating menu for our listbox(playlist)'''
         Menu = PhotoImage(file='Images/menu.png')
         tk.Label(self.window, image=Menu, bg='#0f1a2b').pack(padx=10, pady=50, side=tk.RIGHT)
         return Menu
+
+
+    def create_menu_dropdown(self):
+        my_menu = tk.Menu(self.window)
+        self.window.config(menu=my_menu)
+        return my_menu
+
+
+    def menu_dropdown_one(self):
+        add_song_menu = tk.Menu(self.created_menu)
+        self.created_menu.add_cascade(label="Add songs", menu=add_song_menu)
+        return add_song_menu
+
+
+    def menu_dropdown_one_o(self):
+        self.add_song_menu.add_command(label='Add One Song', command=self.add_one_song)
+        self.add_song_menu.add_command(label='Add Songs', command=self.add_songs)
+
+
+
+    def add_one_song(self):
+        song_with_path = filedialog.askopenfilename(title="Choose A Song", filetypes=(("mp3 Files", "*.mp3"), ))
+        import os
+        song = os.path.basename(song_with_path)
+        self.path_songs.append(song_with_path.replace(song, ''))
+        self.playlist.insert(tk.END, song)
+
+
+    def add_songs(self):
+        song_with_path = filedialog.askopenfilenames(title="Choose A Song", filetypes=(("mp3 Files", "*.mp3"), ))
+        import os
+        # for i in range(int(len(song_with_path))):
+            # song = os.path.basename(song_with_path)
+        # tp = []
+        for song_path in song_with_path:
+            # tp.append(song_path)
+            song = os.path.basename(song_path)
+            self.path_songs.append(song_path.replace(song, ''))
+            self.playlist.insert(tk.END, song)
+
 
     def create_menu_frame(self):
         '''Creating the menu frame for our playlist'''
@@ -130,14 +171,14 @@ class Player(tk.Tk):
         playlist.bind('<Return>', self.play_song_event)
         playlist.bind('<Double-Button-1>', self.play_song_event)
         playlist.bind('<space>', self.resume_or_pause_song_event)
-        playlist.bind('<f>', self.forward_song)
+        playlist.bind('<f>', self.forward_song_event)
         playlist.bind('<b>', self.back_song)
         scroll.config(command=playlist.yview)
         scroll.pack(side=tk.RIGHT, fill=tk.Y)
         playlist.pack(side=tk.LEFT, fill=tk.BOTH)
         return playlist
 
-    def forward_song(self, event):
+    def forward_song_event(self, event):
         next_one = self.playlist.curselection()
         next_one = next_one[0]+1
         song = self.playlist.get(next_one)
@@ -148,6 +189,17 @@ class Player(tk.Tk):
         self.playlist.selection_set(next_one, last=None)
         self.play_song()
 
+
+    def forward_song(self):
+        next_one = self.playlist.curselection()
+        next_one = next_one[0]+1
+        song = self.playlist.get(next_one)
+
+
+        self.playlist.selection_clear(0, tk.END)
+        self.playlist.activate(next_one)
+        self.playlist.selection_set(next_one, last=None)
+        self.play_song()
 
 
     def back_song(self, event):
@@ -199,6 +251,8 @@ class Player(tk.Tk):
 # Trying to play the music
             pygame.mixer.music.load(self.song)
             pygame.mixer.music.play(loops=0)
+            self.is_playing = True
+            self.is_paused = False
 
         except Exception as e:
 # Song not in the last current directory
@@ -210,10 +264,12 @@ class Player(tk.Tk):
                     change_dir = os.chdir(self.path_songs[i])
                     pygame.mixer.music.load(f'{self.path_songs[i]}/{self.song}')
                     # pygame.mixer.music.load(f'{change_dir}/{self.song}')
+                    self.is_playing = True
+                    self.is_paused = False
                     pygame.mixer.music.play(loops=0)
                 except Exception as e:
                     continue
-        self.is_playing = True
+
 
 
     def play_song_event(self, event):
@@ -221,15 +277,18 @@ class Player(tk.Tk):
         try:
             pygame.mixer.music.load(self.song)
             pygame.mixer.music.play(loops=0)
+            self.is_playing = True
+            self.is_paused = False
         except Exception as e:
             for i in range(int(len(self.path_songs))):
                 try:
                     os.chdir(self.path_songs[i])
                     pygame.mixer.music.load(f'{self.path_songs[i]}/{self.song}')
+                    self.is_playing = True
+                    self.is_paused = False
                     pygame.mixer.music.play(loops=0)
                 except Exception as e:
                     continue
-        self.is_playing = True
 
 
 
