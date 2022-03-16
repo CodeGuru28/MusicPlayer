@@ -7,6 +7,9 @@ from tkinter import PhotoImage
 from tkinter import filedialog
 from pygame import mixer
 from PIL import Image, ImageTk
+from mutagen.mp3 import MP3
+import time
+import tkinter.ttk as ttk
 
 # Constant Colors
 
@@ -42,6 +45,7 @@ class Player(tk.Tk):
         self.resume_button = self.create_resume_button()
         self.stop_button = self.create_stop_button()
         self.forward_button_ = self.create_forward_button()
+        self.back_button_ = self.create_backward_button()
 
 
 
@@ -55,6 +59,9 @@ class Player(tk.Tk):
         self.created_menu = self.create_menu_dropdown()
         self.add_song_menu = self.menu_dropdown_one()
         self.one_menu = self.menu_dropdown_one_o()
+
+
+        self.slider_ = self.slider()
 
     def create_top_frame(self):
         '''Creating the top frame'''
@@ -102,6 +109,14 @@ class Player(tk.Tk):
         forward_button = ImageTk.PhotoImage(forward_button_)
         tk.Button(self.window, image=forward_button,bg='#0f1a2b', bd=0, command=self.forward_song).place(x=390, y=550)
         return forward_button
+
+    def create_backward_button(self):
+        backward_button_ = Image.open('Images/back.png')
+        backward_button_ = backward_button_.resize((40, 50), Image.ANTIALIAS)
+
+        backward_button = ImageTk.PhotoImage(backward_button_)
+        tk.Button(self.window, image=backward_button,bg='#0f1a2b', bd=0, command=self.forward_song).place(x=950, y=550)
+        return backward_button
     
 
 
@@ -319,6 +334,12 @@ class Player(tk.Tk):
         elif(self.is_paused == False):
             pygame.mixer.music.pause()
             self.is_paused = True;
+
+
+    def slider(self):
+        my_slider = ttk.Scale(self.window, from_=10, to=100, orient=tk.HORIZONTAL, value=0, length=460)
+        my_slider.place(x=460, y=560)
+
 
     def run(self):
         self.window.mainloop()
